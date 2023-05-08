@@ -1,7 +1,8 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
-class TestModel(BaseModel):
-    name: str
+class Todo(BaseModel):
+    title: str
     description: str
     completed: bool
