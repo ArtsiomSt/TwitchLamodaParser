@@ -9,6 +9,9 @@ uvicorn = "*"
 pymongo = "*"
 beautifulsoup4 = "*"
 requests = "*"
+flake8 = "*"
+isort = "*"
+black = "*"
 
 [dev-packages]
 

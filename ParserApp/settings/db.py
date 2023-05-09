@@ -1,10 +1,8 @@
-import os
-
-from pymongo.collection import Collection
 from pymongo import MongoClient
+from pymongo.collection import Collection
 
-client = MongoClient('mongodb://db:27017/')
+client = MongoClient("mongodb://db:27017/")
 
 db = client.todos_db
 
-collection: Collection = db['todos']
+collection: Collection = db["todos"]

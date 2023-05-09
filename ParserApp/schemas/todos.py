@@ -3,7 +3,7 @@ def todo_serializer(todo) -> dict:
         "id": str(todo["_id"]),
         "title": todo["title"],
         "description": todo["description"],
-        "completed": todo["completed"]
+        "completed": todo["completed"],
     }
 
 
