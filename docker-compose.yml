@@ -2,12 +2,12 @@ version: "3.9"
 
 services:
   fastapi:
-    build: ParserApp
+    build: src
     command: bash -c "python -m uvicorn app:app --reload --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
     volumes:
-      - ./ParserApp:/app
+      - ./src:/app
     depends_on:
       - db
     env_file:

@@ -5,7 +5,7 @@ from bson import Decimal128
 from database import Collection, get_lamoda_collection
 from fastapi import APIRouter, Depends
 
-from .utils import parse_object
+from .service import parse_object
 
 lamoda_router = APIRouter(prefix='/lamoda')
 
