@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 
-from routers.lamoda_routers import lamoda_router
+from lamoda.routers import lamoda_router
 
 app = FastAPI()
-app.include_router(lamoda_router, prefix="/lamoda")
+app.include_router(lamoda_router)
 
 
 @app.get("/")

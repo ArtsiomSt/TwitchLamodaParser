@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from pymongo.collection import Collection
 
-from .settings import Settings
+from config import Settings
 
 settings = Settings()
 client = MongoClient(settings.mongo_url)

@@ -1,22 +1,26 @@
+import json
 from decimal import Decimal
 
 import requests
 from bs4 import BeautifulSoup
+from fastapi.exceptions import HTTPException
 
-from models.lamoda_models import LamodaProduct
+from .config import LamodaSettings
+from .schemas import LamodaProduct
 
-lamoda_domen = "https://www.lamoda.by"
+settings = LamodaSettings()
+lamoda_url = settings.lamoda_url
 
 
-def parse_category(url: str) -> list:
+def parse_category(url: str) -> list[LamodaProduct]:
     """Function that provides parsing of lamoda category"""
 
     links = get_links_to_parse_category(url)
-    parsed_objects = [parse_object(lamoda_domen + link) for link in links]
+    parsed_objects = [parse_object(lamoda_url + link) for link in links]
     return parsed_objects
 
 
-def get_links_to_parse_category(url: str) -> list:
+def get_links_to_parse_category(url: str) -> list[str]:
     """Function that takes all product urls from category"""
 
     resp = requests.get(url)
@@ -37,7 +41,7 @@ def parse_object(url: str) -> LamodaProduct:
 
     response = requests.get(url)
     if response.status_code == 404:
-        return "Page does not exists"  # Process if there is no such page
+        raise HTTPException(status_code=404, detail="No such lamoda item")
     soup = BeautifulSoup(response.text, "html.parser")
     object_card = soup.find_all("script")
     for script in object_card:
@@ -94,9 +98,9 @@ def remove_redundant_quotes(string_to_refactor: str) -> str:
 def refactor_to_python_dict(string_to_refactor: str) -> str:
     """Function that changes JS-key words to python"""
 
-    string_to_refactor = string_to_refactor.replace("false", "False")
-    string_to_refactor = string_to_refactor.replace("true", "True")
-    string_to_refactor = string_to_refactor.replace("null", "None")
+    string_to_refactor = string_to_refactor.replace("false", '''"False"''')
+    string_to_refactor = string_to_refactor.replace("true", '''"True"''')
+    string_to_refactor = string_to_refactor.replace("null", '''"None"''')
     #  soon will change to provides all changes by one iteration
     return string_to_refactor
 
@@ -106,4 +110,5 @@ def from_script_to_dict(string_from_script: str) -> dict:
 
     string_from_script = remove_redundant_quotes(string_from_script)
     string_from_script = refactor_to_python_dict(string_from_script)
-    return eval(string_from_script)
+    string_from_script = string_from_script.replace('\\', '')
+    return json.loads(string_from_script)

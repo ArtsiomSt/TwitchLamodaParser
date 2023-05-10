@@ -1,9 +1,8 @@
 from fastapi import APIRouter
 
-from parsers.lamoda_parsers import parse_category, parse_object
-from settings.db import lamoda_collection
+from lamoda.utils import parse_object
 
-lamoda_router = APIRouter()
+lamoda_router = APIRouter(prefix='/lamoda')
 
 
 @lamoda_router.post("/product")
