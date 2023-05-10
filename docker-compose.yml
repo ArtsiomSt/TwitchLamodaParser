@@ -10,6 +10,8 @@ services:
       - ./ParserApp:/app
     depends_on:
       - db
+    env_file:
+      - env/backends.env
   db:
     image: mongo
     ports:

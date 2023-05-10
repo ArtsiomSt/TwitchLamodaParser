@@ -1,8 +1,11 @@
 from pymongo import MongoClient
 from pymongo.collection import Collection
 
-client = MongoClient("mongodb://db:27017/")
+from .settings import Settings
 
-db = client.todos_db
+settings = Settings()
+client = MongoClient(settings.mongo_url)
 
-collection: Collection = db["todos"]
+db = client[settings.db_name]
+
+lamoda_collection: Collection = db["lamoda"]

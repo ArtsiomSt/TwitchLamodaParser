@@ -1,16 +1,24 @@
+from decimal import Decimal
+
 import requests
 from bs4 import BeautifulSoup
+
+from models.lamoda_models import LamodaProduct
 
 lamoda_domen = "https://www.lamoda.by"
 
 
 def parse_category(url: str) -> list:
+    """Function that provides parsing of lamoda category"""
+
     links = get_links_to_parse_category(url)
     parsed_objects = [parse_object(lamoda_domen + link) for link in links]
     return parsed_objects
 
 
 def get_links_to_parse_category(url: str) -> list:
+    """Function that takes all product urls from category"""
+
     resp = requests.get(url)
     soup = BeautifulSoup(resp.text, "html.parser")
     product_cards = soup.find_all("div", class_="x-product-card__card")
@@ -24,7 +32,9 @@ def get_links_to_parse_category(url: str) -> list:
     return links_to_parse
 
 
-def parse_object(url: str) -> dict:
+def parse_object(url: str) -> LamodaProduct:
+    """Function that creates a LamodaProduct object by parsing url"""
+
     response = requests.get(url)
     if response.status_code == 404:
         return "Page does not exists"  # Process if there is no such page
@@ -40,12 +50,28 @@ def parse_object(url: str) -> dict:
             target_dict_start = payload_var_text.find("{")
             target_dict_end = payload_var_text.find("\n")
 
-            target_dict = payload_var_text[target_dict_start:target_dict_end - 1]
-            result_dict = from_script_to_dict(target_dict)
-            return result_dict["product"]
+            target_dict = payload_var_text[target_dict_start: target_dict_end - 1]
+            full_result_dict = from_script_to_dict(target_dict)
+            result_dict = full_result_dict["product"]
+            model_from_dict = LamodaProduct.parse_obj(
+                {
+                    "product_sku": result_dict["sku"],
+                    "product_type": result_dict["type"],
+                    "product_title": result_dict["title"],
+                    "brand": result_dict["brand"]["title"],
+                    "price": round(
+                        Decimal(result_dict["prices"]["original"]["price"]), 2
+                    ),
+                    "attributes": result_dict["attributes"],
+                    "url": url,
+                }
+            )
+            return model_from_dict
 
 
 def remove_redundant_quotes(string_to_refactor: str) -> str:
+    """Function to remove redundant quotes like {"owner": "OOO \"Products"\"}"""
+
     expected_after_quotes = ["{", "}", ",", ":", "]", "["]
     opened = False
     to_replace = []
@@ -66,13 +92,18 @@ def remove_redundant_quotes(string_to_refactor: str) -> str:
 
 
 def refactor_to_python_dict(string_to_refactor: str) -> str:
+    """Function that changes JS-key words to python"""
+
     string_to_refactor = string_to_refactor.replace("false", "False")
     string_to_refactor = string_to_refactor.replace("true", "True")
     string_to_refactor = string_to_refactor.replace("null", "None")
+    #  soon will change to provides all changes by one iteration
     return string_to_refactor
 
 
 def from_script_to_dict(string_from_script: str) -> dict:
+    """Function that refactors text from JS-script to python dict"""
+
     string_from_script = remove_redundant_quotes(string_from_script)
     string_from_script = refactor_to_python_dict(string_from_script)
     return eval(string_from_script)
