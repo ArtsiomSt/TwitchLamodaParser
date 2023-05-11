@@ -12,6 +12,7 @@ requests = "*"
 flake8 = "*"
 isort = "*"
 black = "*"
+mypy = "*"
 
 [dev-packages]
 

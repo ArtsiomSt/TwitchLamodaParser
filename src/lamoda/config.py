@@ -6,7 +6,5 @@ class LamodaSettings(BaseSettings):
 
     class Config:
         fields = {
-            "lamoda_url": {
-                "env": "LAMODA_URL"
-            },
+            "lamoda_url": {"env": "LAMODA_URL"},
         }

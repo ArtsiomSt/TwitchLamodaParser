@@ -110,5 +110,5 @@ def from_script_to_dict(string_from_script: str) -> dict:
 
     string_from_script = remove_redundant_quotes(string_from_script)
     string_from_script = refactor_to_python_dict(string_from_script)
-    string_from_script = string_from_script.replace('\\', '')
+    string_from_script = string_from_script.replace("\\", "")
     return json.loads(string_from_script)
