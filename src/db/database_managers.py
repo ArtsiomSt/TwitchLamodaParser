@@ -1,9 +1,9 @@
 from abc import abstractmethod
-from typing import Protocol
+from typing import Protocol, Any
 
 from bson import ObjectId
 
-from lamoda.schemas import LamodaProduct
+from lamoda.schemas import LamodaProduct, LamodaCategory
 
 
 class LamodaDatabaseManager(Protocol):
@@ -25,12 +25,28 @@ class LamodaDatabaseManager(Protocol):
 
     @abstractmethod
     def save_one_product(self, product: LamodaProduct) -> str:
-        """Implementing of saving one LamodaProduct"""
+        """Implementation of saving one LamodaProduct"""
 
     @abstractmethod
     def get_one_product(self, product_id: ObjectId) -> LamodaProduct:
-        """Implementing of getting product by unique identifiers"""
+        """Implementation of getting product by unique identifiers"""
 
     @abstractmethod
-    def get_test_message(self, message: str) -> dict:
-        """test"""
+    def get_products_by_filter(self, query_filter: dict) -> list[LamodaProduct]:
+        """Implementation of getting products by custom filter"""
+
+    @abstractmethod
+    def save_one_category(self, category: LamodaCategory) -> str:
+        """Implementation of saving LamodaCategory"""
+
+    @abstractmethod
+    def get_one_category(self, product_id: ObjectId) -> LamodaCategory:
+        """Implementation of getting product by unique identifiers"""
+
+    @abstractmethod
+    def get_categories_by_filter(self, query_filter: dict) -> list[LamodaCategory]:
+        """Implementation of getting products by custom filter"""
+
+    @abstractmethod
+    def get_test_message(self, message: str) -> Any:
+        """This function is made for personal purposes and test"""

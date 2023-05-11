@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from db import get_lamoda_database
 from db.database_managers import LamodaDatabaseManager
 from lamoda.schemas import LamodaProduct
-from lamoda.service import parse_object
+from lamoda.service import parse_object, parse_lamoda_category
 
 lamoda_router = APIRouter(prefix="/lamoda")
 
@@ -23,10 +23,17 @@ def parse_product(url: str, db: LamodaDb):
     return saved_product
 
 
+@lamoda_router.post("/category")
+def parse_category(url: str, db: LamodaDb):
+    """View for parsing category"""
+
+    category = parse_lamoda_category(url)
+    db.save_one_category(category)
+    return {"message": "success"}
+
+
 @lamoda_router.get("/test")
 def test_message(db: LamodaDb):
-    print(db.client)
-    print(db.db)
     return db.get_test_message("works")
 
 

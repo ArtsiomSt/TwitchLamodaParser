@@ -1,5 +1,4 @@
 from datetime import datetime
-from decimal import Decimal
 from typing import Optional
 
 from bson import ObjectId
@@ -27,6 +26,14 @@ class LamodaProduct(BaseModel):
     product_title: str
     brand: str
     created_at: datetime = datetime.utcnow()
-    price: Decimal
+    price: str
     attributes: list[dict]
+    url: str
+
+
+class LamodaCategory(BaseModel):
+    id: Optional[OID]
+    products: list[LamodaProduct]
+    category_title: str
+    created_at: datetime = datetime.utcnow()
     url: str
