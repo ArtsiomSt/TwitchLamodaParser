@@ -1,11 +1,12 @@
 import json
+from typing import Generator
 
 import requests
 from bs4 import BeautifulSoup
 from fastapi.exceptions import HTTPException
 
 from .config import LamodaSettings
-from .schemas import LamodaProduct, LamodaCategory
+from .schemas import LamodaCategory, LamodaProduct
 
 settings = LamodaSettings()
 lamoda_url = settings.lamoda_url
@@ -15,15 +16,21 @@ def parse_lamoda_category(url: str) -> LamodaCategory:
     """Function that provides parsing of lamoda category"""
 
     category_info = get_info_to_parse_category(url)
-    parsed_objects = [
-        parse_object(lamoda_url + link) for link in category_info["links"]
-    ]
     category = LamodaCategory(
-        category_title=category_info["title"],
-        products=parsed_objects,
+        category_title=category_info["title"].strip(),
         url=url,
+        product_links=category_info["links"],
     )
     return category
+
+
+def parse_links_from_category(
+    category: LamodaCategory,
+) -> Generator[LamodaProduct, None, None]:
+    for link in category.product_links:
+        parsed_object = parse_object(lamoda_url + link)
+        parsed_object.category_id = category.id
+        yield parsed_object
 
 
 def get_info_to_parse_category(url: str) -> dict:
@@ -65,7 +72,7 @@ def parse_object(url: str) -> LamodaProduct:
             target_dict_start = payload_var_text.find("{")
             target_dict_end = payload_var_text.find("\n")
 
-            target_dict = payload_var_text[target_dict_start : target_dict_end - 1]
+            target_dict = payload_var_text[target_dict_start: target_dict_end - 1]
             full_result_dict = from_script_to_dict(target_dict)
             result_dict = full_result_dict["product"]
             model_from_dict = LamodaProduct.parse_obj(
@@ -101,7 +108,7 @@ def remove_redundant_quotes(string_to_refactor: str) -> str:
                 opened = False
     for replace in to_replace:
         string_to_refactor = (
-            string_to_refactor[:replace] + "'" + string_to_refactor[replace + 1 :]
+            string_to_refactor[:replace] + "'" + string_to_refactor[replace + 1:]
         )
     return string_to_refactor
 

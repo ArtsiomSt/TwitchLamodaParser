@@ -5,7 +5,7 @@ from pymongo.collection import Collection
 from pymongo.database import Database
 from pymongo.mongo_client import MongoClient
 
-from lamoda.schemas import LamodaProduct, LamodaCategory
+from lamoda.schemas import LamodaCategory, LamodaProduct
 
 from .database_managers import LamodaDatabaseManager
 
@@ -27,7 +27,9 @@ class MongoLamodaManager(LamodaDatabaseManager):
 
     def save_one_product(self, product: LamodaProduct) -> str:
         dict_from_product = product.dict()
-        if self.product_collection.find_one({"url": product.url}):
+        if self.product_collection.find_one(
+            {"url": product.url, "category_id": product.category_id}
+        ):
             created_id = self.product_collection.find_one_and_replace(
                 {"url": product.url}, dict_from_product
             )
@@ -71,4 +73,10 @@ class MongoLamodaManager(LamodaDatabaseManager):
     def get_test_message(
         self, message: str
     ) -> Any:  # method for my personal tests, would like to keep it for now)
+        product = self.category_collection.find_one(
+            {"url": "https://www.lamoda.by/c/5971/shoes-muzhkrossovki/"}
+        )
+        print(product)
+        for item in self.product_collection.find({"category_id": str(product["_id"])}):
+            print(item)
         return {"message": message}

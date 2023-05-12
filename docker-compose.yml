@@ -12,6 +12,7 @@ services:
       - db
     env_file:
       - env/backends.env
+      - env/twitch.env
   db:
     image: mongo
     ports:

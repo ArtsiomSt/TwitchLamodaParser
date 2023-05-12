@@ -3,9 +3,11 @@ from fastapi import FastAPI
 from config import Settings
 from db import lamoda_db
 from lamoda.routers import lamoda_router
+from twitch.routers import twitch_router
 
 app = FastAPI()
 app.include_router(lamoda_router)
+app.include_router(twitch_router)
 
 
 @app.on_event("startup")

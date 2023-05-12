@@ -1,9 +1,9 @@
 from abc import abstractmethod
-from typing import Protocol, Any
+from typing import Any, Protocol
 
 from bson import ObjectId
 
-from lamoda.schemas import LamodaProduct, LamodaCategory
+from lamoda.schemas import LamodaCategory, LamodaProduct
 
 
 class LamodaDatabaseManager(Protocol):

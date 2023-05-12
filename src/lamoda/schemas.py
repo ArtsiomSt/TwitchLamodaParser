@@ -19,6 +19,14 @@ class OID(str):
         return str(v)
 
 
+class LamodaCategory(BaseModel):
+    id: Optional[OID]
+    category_title: str
+    product_links: list[str]
+    created_at: datetime = datetime.utcnow()
+    url: str
+
+
 class LamodaProduct(BaseModel):
     id: Optional[OID]
     product_sku: str
@@ -28,12 +36,5 @@ class LamodaProduct(BaseModel):
     created_at: datetime = datetime.utcnow()
     price: str
     attributes: list[dict]
-    url: str
-
-
-class LamodaCategory(BaseModel):
-    id: Optional[OID]
-    products: list[LamodaProduct]
-    category_title: str
-    created_at: datetime = datetime.utcnow()
+    category_id: Optional[OID]
     url: str
