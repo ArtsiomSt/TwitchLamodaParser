@@ -4,9 +4,10 @@ from typing import Any, Protocol
 from bson import ObjectId
 
 from lamoda.schemas import LamodaCategory, LamodaProduct
+from twitch.schemas import TwitchUser, TwitchStream
 
 
-class LamodaDatabaseManager(Protocol):
+class DatabaseManager(Protocol):
     @property
     def client(self):
         raise NotImplementedError
@@ -23,6 +24,12 @@ class LamodaDatabaseManager(Protocol):
     def close_database_connection(self):
         """Implementing closing db connection"""
 
+    @abstractmethod
+    def get_test_message(self, message: str) -> Any:
+        """This function is made for personal purposes and tests"""
+
+
+class LamodaDatabaseManager(DatabaseManager):
     @abstractmethod
     def save_one_product(self, product: LamodaProduct) -> str:
         """Implementation of saving one LamodaProduct"""
@@ -47,6 +54,8 @@ class LamodaDatabaseManager(Protocol):
     def get_categories_by_filter(self, query_filter: dict) -> list[LamodaCategory]:
         """Implementation of getting products by custom filter"""
 
+
+class TwitchDatabaseManager(DatabaseManager):
     @abstractmethod
-    def get_test_message(self, message: str) -> Any:
-        """This function is made for personal purposes and test"""
+    def save_one_user(self, user: TwitchUser) -> str:
+        """Implementing saving of user"""

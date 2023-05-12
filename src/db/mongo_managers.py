@@ -6,8 +6,9 @@ from pymongo.database import Database
 from pymongo.mongo_client import MongoClient
 
 from lamoda.schemas import LamodaCategory, LamodaProduct
+from twitch.schemas import TwitchUser
 
-from .database_managers import LamodaDatabaseManager
+from .database_managers import LamodaDatabaseManager, TwitchDatabaseManager
 
 
 class MongoLamodaManager(LamodaDatabaseManager):
@@ -70,13 +71,38 @@ class MongoLamodaManager(LamodaDatabaseManager):
             result_list.append(LamodaCategory(**category))
         return result_list
 
-    def get_test_message(
-        self, message: str
-    ) -> Any:  # method for my personal tests, would like to keep it for now)
+    def get_test_message(self, message: str) -> Any:
+        # method for my personal tests, would like to keep it for now
         product = self.category_collection.find_one(
             {"url": "https://www.lamoda.by/c/5971/shoes-muzhkrossovki/"}
         )
         print(product)
         for item in self.product_collection.find({"category_id": str(product["_id"])}):
             print(item)
+        return {"message": message}
+
+
+class MongoTwitchManager(TwitchDatabaseManager):
+    db: Database = None
+    client: MongoClient = None
+    users_collection: Collection = None
+    streams_collection: Collection = None
+    games_collection: Collection = None
+
+    def connect_to_database(self, path: str, db_name: str):
+        self.client = MongoClient(path)
+        self.db = self.client[db_name]
+        self.users_collection = self.db.twitch_u
+        self.streams_collection = self.db.twitch_s
+        self.games_collection = self.db.twitch_g
+
+    def close_database_connection(self):
+        self.client.close()
+
+    def save_one_user(self, user: TwitchUser) -> str:
+        created_id = self.users_collection.insert_one(user.dict())
+        return str(created_id.inserted_id)
+
+    def get_test_message(self, message: str) -> Any:
+        # method for my personal tests, would like to keep it for now
         return {"message": message}

@@ -7,6 +7,8 @@ class TwitchSettings(BaseSettings):
     grand_type: str
     token_url: str
     streams_url: str
+    users_url: str
+    games_url: str
 
     class Config:
         fields = {
@@ -19,4 +21,6 @@ class TwitchSettings(BaseSettings):
             "grand_type": {"env": "GRAND_TYPE"},
             "client_secret": {"env": "client_secret"},
             "streams_url": {"env": "GET_STREAMS"},
+            "users_url": {"env": "GET_USERS"},
+            "games_url": {"env": "GET_GAMES"}
         }
