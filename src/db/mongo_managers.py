@@ -6,7 +6,7 @@ from pymongo.database import Database
 from pymongo.mongo_client import MongoClient
 
 from lamoda.schemas import LamodaCategory, LamodaProduct
-from twitch.schemas import TwitchUser
+from twitch.schemas import TwitchUser, TwitchStream
 
 from .database_managers import LamodaDatabaseManager, TwitchDatabaseManager
 
@@ -34,8 +34,10 @@ class MongoLamodaManager(LamodaDatabaseManager):
             created_id = self.product_collection.find_one_and_replace(
                 {"url": product.url}, dict_from_product
             )
+            product.id = str(created_id["_id"])
             return str(created_id["_id"])
         created_id = self.product_collection.insert_one(dict_from_product)
+        product.id = str(created_id.inserted_id)
         return str(created_id.inserted_id)
 
     def get_one_product(self, product_id: ObjectId) -> LamodaProduct:
@@ -55,8 +57,10 @@ class MongoLamodaManager(LamodaDatabaseManager):
             created_id = self.category_collection.find_one_and_replace(
                 {"url": category.url}, category.dict()
             )
+            category.id = created_id['_id']
             return str(created_id["_id"])
         created_id = self.category_collection.insert_one(category.dict())
+        category.id = created_id.inserted_id
         return str(created_id.inserted_id)
 
     def get_one_category(self, category_id: ObjectId) -> LamodaCategory:
@@ -101,8 +105,23 @@ class MongoTwitchManager(TwitchDatabaseManager):
 
     def save_one_user(self, user: TwitchUser) -> str:
         created_id = self.users_collection.insert_one(user.dict())
+        user.id = str(created_id.inserted_id)
+        return str(created_id.inserted_id)
+
+    def save_one_stream(self, stream: TwitchStream) -> str:
+        user = stream.user
+        self.save_one_user(user)
+        created_id = self.streams_collection.insert_one(stream.dict())
+        stream.id = str(created_id.inserted_id)
         return str(created_id.inserted_id)
 
     def get_test_message(self, message: str) -> Any:
         # method for my personal tests, would like to keep it for now
+        #self.streams_collection.delete_many({})
+        for item in self.streams_collection.find():
+            print(item)
+        print()
+        # self.users_collection.delete_many({})
+        for item in self.users_collection.find():
+            print(item)
         return {"message": message}

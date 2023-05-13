@@ -59,3 +59,7 @@ class TwitchDatabaseManager(DatabaseManager):
     @abstractmethod
     def save_one_user(self, user: TwitchUser) -> str:
         """Implementing saving of user"""
+
+    @abstractmethod
+    def save_one_stream(self, stream: TwitchStream) -> str:
+        """Implementing saving stream"""

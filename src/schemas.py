@@ -6,6 +6,11 @@ from pydantic import BaseModel
 
 
 class OID(str):
+    """
+    Class that helps with refactoring id from
+    ObjectID to str while creating instance
+    """
+
     @classmethod
     def __get_validators__(cls):
         yield cls.validate
