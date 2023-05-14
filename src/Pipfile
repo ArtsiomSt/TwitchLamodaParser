@@ -13,6 +13,8 @@ flake8 = "*"
 isort = "*"
 black = "*"
 mypy = "*"
+kafka-python = "*"
+redis = "*"
 
 [dev-packages]
 
