@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     lamoda_db_name: str = "parser_lamoda"
     twitch_db_name: str = "parser_twitch"
     redis_host: str = "localhost:6379"
+    kafka_broker: str = "localhost:9092"
 
     class Config:
         fields = {
@@ -20,5 +21,8 @@ class Settings(BaseSettings):
             },
             "redis_host": {
                 "env": "REDIS_HOST",
-            }
+            },
+            "kafka_broker": {
+                "env": "KAFKA_BROKER",
+            },
         }

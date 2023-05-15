@@ -3,6 +3,7 @@ from typing import Annotated
 from bson import ObjectId
 from fastapi import APIRouter, Depends
 
+from brokers.producer import producer
 from db import get_lamoda_database
 from db.database_managers import LamodaDatabaseManager
 from dependecies import get_cache_manager
@@ -30,6 +31,7 @@ def parse_product(url: str, db: LamodaDb, cache: CacheMngr):
         return object_from_cache
     product = parse_object(url)
     created_id = db.save_one_product(product)
+    producer.produce("product", key="message", value="new_from_products")
     cache.save_to_cache(key_for_cache, 60*5, product)
     saved_product = db.get_one_product(ObjectId(created_id))
     return saved_product

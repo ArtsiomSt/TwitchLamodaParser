@@ -4,17 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastapi = "*"
-uvicorn = "*"
-pymongo = "*"
-beautifulsoup4 = "*"
-requests = "*"
-flake8 = "*"
-isort = "*"
-black = "*"
-mypy = "*"
 kafka-python = "*"
-redis = "*"
+requests = "*"
 confluent-kafka = "*"
 
 [dev-packages]

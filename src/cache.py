@@ -18,7 +18,6 @@ class RedisCacheManager:
         if isinstance(value, BaseModel) or isinstance(value, dict):
             dict_from_object = value.dict() if isinstance(value, BaseModel) else value
             replace_basemodel_unserializable_fields(dict_from_object)
-            print(dict_from_object)
             value = dict_from_object
         value = json.dumps(value).encode("utf-8")
         return self.redis.setex(json.dumps(key).encode("utf-8"), ttl, value)
