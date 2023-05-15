@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     mongo_url: str = "mongodb://localhost:27017/"
     lamoda_db_name: str = "parser_lamoda"
     twitch_db_name: str = "parser_twitch"
+    redis_host: str = "localhost:6379"
 
     class Config:
         fields = {
@@ -15,6 +16,9 @@ class Settings(BaseSettings):
                 "env": "LAMODA_DB_NAME",
             },
             "twitch_db_name": {
-                "env": "TWITCH_DB_NAME"
+                "env": "TWITCH_DB_NAME",
+            },
+            "redis_host": {
+                "env": "REDIS_HOST",
             }
         }

@@ -66,6 +66,7 @@ class MongoLamodaManager(LamodaDatabaseManager):
     def get_one_category(self, category_id: ObjectId) -> LamodaCategory:
         category = self.category_collection.find_one({"_id": category_id})
         category["id"] = category["_id"]
+        category["products"] = self.get_products_by_filter({"category_id": str(category['id'])})
         return LamodaCategory(**category)
 
     def get_categories_by_filter(self, query_filter: dict) -> list[LamodaCategory]:
@@ -77,11 +78,7 @@ class MongoLamodaManager(LamodaDatabaseManager):
 
     def get_test_message(self, message: str) -> Any:
         # method for my personal tests, would like to keep it for now
-        product = self.category_collection.find_one(
-            {"url": "https://www.lamoda.by/c/5971/shoes-muzhkrossovki/"}
-        )
-        print(product)
-        for item in self.product_collection.find({"category_id": str(product["_id"])}):
+        for item in self.product_collection.find({}):
             print(item)
         return {"message": message}
 
@@ -117,11 +114,11 @@ class MongoTwitchManager(TwitchDatabaseManager):
 
     def get_test_message(self, message: str) -> Any:
         # method for my personal tests, would like to keep it for now
-        #self.streams_collection.delete_many({})
+        self.streams_collection.delete_many({})
         for item in self.streams_collection.find():
             print(item)
         print()
-        # self.users_collection.delete_many({})
+        self.users_collection.delete_many({})
         for item in self.users_collection.find():
             print(item)
         return {"message": message}
