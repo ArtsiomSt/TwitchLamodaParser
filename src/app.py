@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+
 from config import Settings
 from db import lamoda_db, twitch_db
 from lamoda.routers import lamoda_router

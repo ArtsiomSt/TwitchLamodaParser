@@ -2,14 +2,19 @@ from typing import Generator
 
 import requests
 from fastapi.exceptions import HTTPException
-from .schemas import TwitchStream, TwitchUser
 
 from .config import TwitchSettings
+from .schemas import TwitchStream, TwitchUser
 
 settings = TwitchSettings()
 
 
 class TwitchParser:
+    """
+    Class that provides getting token for twitch api
+    and provides methods for parsing twitch
+    """
+
     def __init__(self):
         token_info = self.obtain_access_token()
         self.access_token = token_info.get("access_token", None)

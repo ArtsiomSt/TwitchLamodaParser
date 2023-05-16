@@ -4,7 +4,7 @@ from typing import Any, Protocol
 from bson import ObjectId
 
 from lamoda.schemas import LamodaCategory, LamodaProduct
-from twitch.schemas import TwitchUser, TwitchStream
+from twitch.schemas import TwitchStream, TwitchUser
 
 
 class DatabaseManager(Protocol):

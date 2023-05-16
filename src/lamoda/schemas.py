@@ -1,6 +1,6 @@
 from typing import Optional
 
-from schemas import CustomModel, OID
+from schemas import OID, CustomModel
 
 
 class LamodaProduct(CustomModel):

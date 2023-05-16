@@ -9,6 +9,7 @@ class TwitchSettings(BaseSettings):
     streams_url: str
     users_url: str
     games_url: str
+    twitch_stream_topic: str
 
     class Config:
         fields = {
@@ -22,5 +23,6 @@ class TwitchSettings(BaseSettings):
             "client_secret": {"env": "client_secret"},
             "streams_url": {"env": "GET_STREAMS"},
             "users_url": {"env": "GET_USERS"},
-            "games_url": {"env": "GET_GAMES"}
+            "games_url": {"env": "GET_GAMES"},
+            "twitch_stream_topic": {"env": "TWITCH_STREAM_TOPIC"},
         }

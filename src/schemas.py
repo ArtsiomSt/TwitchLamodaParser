@@ -1,5 +1,5 @@
-from typing import Optional
 from datetime import datetime
+from typing import Any, Optional
 
 from bson import ObjectId
 from pydantic import BaseModel
@@ -27,3 +27,16 @@ class OID(str):
 class CustomModel(BaseModel):
     id: Optional[OID]
     created_at: datetime = datetime.utcnow()
+
+
+class LamodaResponseFromParser(BaseModel):
+    url: str
+    status: str
+    params: dict
+    data: Optional[Any]
+
+
+class TwitchResponseFromParser(BaseModel):
+    twitch_streams_params: dict
+    status: str
+    data: Optional[Any]

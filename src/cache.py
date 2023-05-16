@@ -1,20 +1,28 @@
 import json
 from datetime import datetime
-
-from redis import Redis
-from config import Settings
 from typing import Any
+
 from pydantic import BaseModel
+from redis import Redis
+
+from config import Settings
 
 settings = Settings()
 
 
 class RedisCacheManager:
+    """
+    Class for providing saving info to redis,
+    it checks and provide custom keys(dicts for ex),
+    also checks if there are fields that can not be
+    serialized and saved to redis
+    """
+
     def __init__(self):
-        self.redis = Redis(host="redis", port=6379)
+        self.redis = Redis(host=settings.redis_host, port=int(settings.redis_port))
         self.is_active = True
 
-    def save_to_cache(self, key: Any,  ttl: int, value: Any) -> bool:
+    def save_to_cache(self, key: Any, ttl: int, value: Any) -> bool:
         if isinstance(value, BaseModel) or isinstance(value, dict):
             dict_from_object = value.dict() if isinstance(value, BaseModel) else value
             replace_basemodel_unserializable_fields(dict_from_object)
@@ -33,6 +41,11 @@ class RedisCacheManager:
 
 
 def replace_basemodel_unserializable_fields(dict_from_object: dict):
+    """
+    Checks and replaces fields that can not be serialized
+    (for ex. datetime field in BaseModel)
+    """
+
     for dkey, dvalue in dict_from_object.items():
         if isinstance(dvalue, datetime):
             dict_from_object[dkey] = str(dvalue)
@@ -45,7 +58,6 @@ def replace_basemodel_unserializable_fields(dict_from_object: dict):
                 if isinstance(list_inst, BaseModel):
                     dict_from_current_object = list_inst.dict()
                     replace_basemodel_unserializable_fields(dict_from_current_object)
-                    print(dict_from_current_object)
                     new_list.append(dict_from_current_object)
             dict_from_object[dkey] = new_list
         elif isinstance(dvalue, dict):

@@ -1,3 +1,6 @@
 from confluent_kafka import Producer
 
-producer = Producer({'bootstrap.servers': 'kafka:29092'})
+from config import Settings
+
+settings = Settings()
+producer = Producer({"bootstrap.servers": settings.kafka_broker})

@@ -6,7 +6,7 @@ from pymongo.database import Database
 from pymongo.mongo_client import MongoClient
 
 from lamoda.schemas import LamodaCategory, LamodaProduct
-from twitch.schemas import TwitchUser, TwitchStream
+from twitch.schemas import TwitchStream, TwitchUser
 
 from .database_managers import LamodaDatabaseManager, TwitchDatabaseManager
 
@@ -57,7 +57,7 @@ class MongoLamodaManager(LamodaDatabaseManager):
             created_id = self.category_collection.find_one_and_replace(
                 {"url": category.url}, category.dict()
             )
-            category.id = created_id['_id']
+            category.id = created_id["_id"]
             return str(created_id["_id"])
         created_id = self.category_collection.insert_one(category.dict())
         category.id = created_id.inserted_id
@@ -66,7 +66,9 @@ class MongoLamodaManager(LamodaDatabaseManager):
     def get_one_category(self, category_id: ObjectId) -> LamodaCategory:
         category = self.category_collection.find_one({"_id": category_id})
         category["id"] = category["_id"]
-        category["products"] = self.get_products_by_filter({"category_id": str(category['id'])})
+        category["products"] = self.get_products_by_filter(
+            {"category_id": str(category["id"])}
+        )
         return LamodaCategory(**category)
 
     def get_categories_by_filter(self, query_filter: dict) -> list[LamodaCategory]:
