@@ -35,12 +35,12 @@ while True:
             case "product":
                 params = {"url": message_data.get("url", None)}
                 params.update(message_data.get("params", {}))
-                resp = requests.post(form_url(settings.parse_product_url), params=params)
+                resp = requests.post(form_url(settings.parse_product_url), json=params)
                 logger_structlog.info("Successfully processed request", topic=topic, url=params['url'])
             case "category":
                 params = {"url": message_data.get("url", None)}
                 params.update(message_data.get("params", {}))
-                resp = requests.post(form_url(settings.parse_category_url), params=params)
+                resp = requests.post(form_url(settings.parse_category_url), json=params)
                 logger_structlog.info("Successfully processed request", topic=topic, url=params['url'])
             case "stream":
                 params = {}

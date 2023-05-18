@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 from fastapi.exceptions import HTTPException
 
 from .config import LamodaSettings
-from .exeptions import NotValidUrlException
 from .schemas import LamodaCategory, LamodaProduct
 
 settings = LamodaSettings()
@@ -131,12 +130,3 @@ def from_script_to_dict(string_from_script: str) -> dict:
     string_from_script = refactor_to_python_dict(string_from_script)
     string_from_script = string_from_script.replace("\\", "")
     return json.loads(string_from_script)
-
-
-def validate_url(url: str, is_product: bool, is_category: bool):
-    if is_product:
-        if not url.startswith(lamoda_url+'/p/'):
-            raise NotValidUrlException(detail="Not valid url for parsing product")
-    elif is_category:
-        if not url.startswith(lamoda_url+'/c/'):
-            raise NotValidUrlException(detail="Not valid url for parsing category")

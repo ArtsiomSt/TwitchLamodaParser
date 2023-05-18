@@ -24,25 +24,28 @@ CacheMngr = Annotated[RedisCacheManager, Depends(get_cache_manager)]
 settings = TwitchSettings()
 
 
-@twitch_router.post("/streams")
+@twitch_router.post("/parse/stream")
 async def parse_streams(
     parser: TwitchParserObject,
     db: TwitchDb,
     cache: CacheMngr,
-    first: int = 10,
+    streams_amount: int = 10,
     game_id: int | None = None,
     language: str = "en",
 ):
-    """This views stands for parsing streams, processed streams are saved to cache and db"""
+    """
+    This views stands for parsing streams, processed streams are saved to cache and db
+    It should not be called directly, because of it has to calculate a lot of info,
+    Should be called from kafka.
+    """
 
-    query_params = {"first": first, "language": language}
+    query_params = {"streams_amount": streams_amount, "language": language}
     if game_id is not None:
         query_params["game_id"] = game_id
     key_for_cache = {"twitch_stream_params": query_params}
     object_from_cache = await cache.get_object_from_cache(key_for_cache)
-    if object_from_cache:
-        if object_from_cache["status"] == ObjectStatus.PROCESSED.name:
-            return {"message": "object is already processed"}
+    if object_from_cache and object_from_cache["status"] == ObjectStatus.PROCESSED.name:
+        return {"message": "object is already processed"}
     streams = list(parser.get_streams(query_params=query_params))
     for stream in streams:
         await db.save_one_stream(stream)
@@ -58,19 +61,20 @@ async def parse_streams(
     return {"message": "processed"}
 
 
-@twitch_router.get("/parse/streams", response_model=TwitchResponseFromParser)
+@twitch_router.post("/stream", response_model=TwitchResponseFromParser)
 async def get_parsed_streams(
     cache: CacheMngr,
-    first: int = 10,
+    streams_amount: int = 10,
     game_id: int | None = None,
     language: str = "en",
 ):
     """
     This view stands for sending requests for parsing streams
-    using kafka, streams are parsed in other application
+    using kafka, streams are parsed in other application. Kafka sends request
+    for parsing to /parse/stream of another application, that processes request
     """
 
-    query_params = {"first": first, "language": language}
+    query_params = {"streams_amount": streams_amount, "language": language}
     if game_id is not None:
         query_params["game_id"] = game_id
     key_for_cache = {"twitch_stream_params": query_params}
