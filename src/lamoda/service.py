@@ -1,39 +1,57 @@
 import json
-from decimal import Decimal
+from typing import Generator
 
 import requests
 from bs4 import BeautifulSoup
 from fastapi.exceptions import HTTPException
 
 from .config import LamodaSettings
-from .schemas import LamodaProduct
+from .schemas import LamodaCategory, LamodaProduct
 
 settings = LamodaSettings()
 lamoda_url = settings.lamoda_url
 
 
-def parse_category(url: str) -> list[LamodaProduct]:
+def parse_lamoda_category(url: str) -> LamodaCategory:
     """Function that provides parsing of lamoda category"""
 
-    links = get_links_to_parse_category(url)
-    parsed_objects = [parse_object(lamoda_url + link) for link in links]
-    return parsed_objects
+    category_info = get_info_to_parse_category(url)
+    category = LamodaCategory(
+        category_title=category_info["title"].strip(),
+        url=url,
+        product_links=category_info["links"],
+    )
+    return category
 
 
-def get_links_to_parse_category(url: str) -> list[str]:
+def parse_links_from_category(
+    category: LamodaCategory,
+) -> Generator[LamodaProduct, None, None]:
+    for link in category.product_links:
+        parsed_object = parse_object(lamoda_url + link)
+        parsed_object.category_id = category.id
+        yield parsed_object
+
+
+def get_info_to_parse_category(url: str) -> dict:
     """Function that takes all product urls from category"""
 
     resp = requests.get(url)
     soup = BeautifulSoup(resp.text, "html.parser")
     product_cards = soup.find_all("div", class_="x-product-card__card")
-    links_to_parse = []
+    category_info = {
+        "title": soup.find("h1", class_="d-catalog-header__title-text").text.replace(
+            "\n", ""
+        ),
+        "links": [],
+    }
     for product in product_cards:
         links = product.find_all(
             "a", class_="x-product-card__link x-product-card__hit-area", href=True
         )
         for link in links:
-            links_to_parse.append(link.attrs["href"])
-    return links_to_parse
+            category_info["links"].append(link.attrs["href"])
+    return category_info
 
 
 def parse_object(url: str) -> LamodaProduct:
@@ -63,8 +81,8 @@ def parse_object(url: str) -> LamodaProduct:
                     "product_type": result_dict["type"],
                     "product_title": result_dict["title"],
                     "brand": result_dict["brand"]["title"],
-                    "price": round(
-                        Decimal(result_dict["prices"]["original"]["price"]), 2
+                    "price": result_dict["prices"]["original"]["price"].replace(
+                        " ", ""
                     ),
                     "attributes": result_dict["attributes"],
                     "url": url,
@@ -108,7 +126,7 @@ def refactor_to_python_dict(string_to_refactor: str) -> str:
 def from_script_to_dict(string_from_script: str) -> dict:
     """Function that refactors text from JS-script to python dict"""
 
-    string_from_script = remove_redundant_quotes(string_from_script)
+    string_from_script = string_from_script.replace(r"\"", "'")
     string_from_script = refactor_to_python_dict(string_from_script)
-    string_from_script = string_from_script.replace('\\', '')
+    string_from_script = string_from_script.replace("\\", "")
     return json.loads(string_from_script)

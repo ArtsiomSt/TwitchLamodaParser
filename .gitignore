@@ -159,3 +159,5 @@ cython_debug/
 data
 .idea
 env/backends.env
+env/twitch.env
+env/broker.env
