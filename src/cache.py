@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel
-from redis import Redis
+from aioredis import Redis
 
 from config import Settings
 
@@ -22,16 +22,16 @@ class RedisCacheManager:
         self.redis = Redis(host=settings.redis_host, port=int(settings.redis_port))
         self.is_active = True
 
-    def save_to_cache(self, key: Any, ttl: int, value: Any) -> bool:
+    async def save_to_cache(self, key: Any, ttl: int, value: Any) -> bool:
         if isinstance(value, BaseModel) or isinstance(value, dict):
             dict_from_object = value.dict() if isinstance(value, BaseModel) else value
             replace_basemodel_unserializable_fields(dict_from_object)
             value = dict_from_object
         value = json.dumps(value).encode("utf-8")
-        return self.redis.setex(json.dumps(key).encode("utf-8"), ttl, value)
+        return await self.redis.setex(json.dumps(key).encode("utf-8"), ttl, value)
 
-    def get_object_from_cache(self, key: Any) -> Any:
-        value = self.redis.get(json.dumps(key).encode("utf-8"))
+    async def get_object_from_cache(self, key: Any) -> Any:
+        value = await self.redis.get(json.dumps(key).encode("utf-8"))
         if value:
             try:
                 return json.loads(value.decode())

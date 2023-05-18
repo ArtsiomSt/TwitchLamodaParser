@@ -17,49 +17,49 @@ class DatabaseManager(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    def connect_to_database(self, path: str, db_name: str):
+    async def connect_to_database(self, path: str, db_name: str):
         """Implementing db connect"""
 
     @abstractmethod
-    def close_database_connection(self):
+    async def close_database_connection(self):
         """Implementing closing db connection"""
 
     @abstractmethod
-    def get_test_message(self, message: str) -> Any:
+    async def get_test_message(self, message: str) -> Any:
         """This function is made for personal purposes and tests"""
 
 
 class LamodaDatabaseManager(DatabaseManager):
     @abstractmethod
-    def save_one_product(self, product: LamodaProduct) -> str:
+    async def save_one_product(self, product: LamodaProduct) -> str:
         """Implementation of saving one LamodaProduct"""
 
     @abstractmethod
-    def get_one_product(self, product_id: ObjectId) -> LamodaProduct:
+    async def get_one_product(self, product_id: ObjectId) -> LamodaProduct:
         """Implementation of getting product by unique identifiers"""
 
     @abstractmethod
-    def get_products_by_filter(self, query_filter: dict) -> list[LamodaProduct]:
+    async def get_products_by_filter(self, query_filter: dict) -> list[LamodaProduct]:
         """Implementation of getting products by custom filter"""
 
     @abstractmethod
-    def save_one_category(self, category: LamodaCategory) -> str:
+    async def save_one_category(self, category: LamodaCategory) -> str:
         """Implementation of saving LamodaCategory"""
 
     @abstractmethod
-    def get_one_category(self, product_id: ObjectId) -> LamodaCategory:
+    async def get_one_category(self, product_id: ObjectId) -> LamodaCategory:
         """Implementation of getting product by unique identifiers"""
 
     @abstractmethod
-    def get_categories_by_filter(self, query_filter: dict) -> list[LamodaCategory]:
+    async def get_categories_by_filter(self, query_filter: dict) -> list[LamodaCategory]:
         """Implementation of getting products by custom filter"""
 
 
 class TwitchDatabaseManager(DatabaseManager):
     @abstractmethod
-    def save_one_user(self, user: TwitchUser) -> str:
+    async def save_one_user(self, user: TwitchUser) -> str:
         """Implementing saving of user"""
 
     @abstractmethod
-    def save_one_stream(self, stream: TwitchStream) -> str:
+    async def save_one_stream(self, stream: TwitchStream) -> str:
         """Implementing saving stream"""

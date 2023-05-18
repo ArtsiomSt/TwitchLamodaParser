@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "66ffb1342b60c3dd5c0c7df1e8c20a5f7b6521abfe24465fbdf86cc71e0abd4e"
+            "sha256": "f95e72b78094d4506a5e561ad53c538e8d0ceda1f786c0e64b7b99b591eff728"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -148,14 +148,6 @@
             "markers": "python_version >= '3.5'",
             "version": "==3.4"
         },
-        "kafka-python": {
-            "hashes": [
-                "sha256:04dfe7fea2b63726cd6f3e79a2d86e709d608d74406638c5da33a01d45a9d7e3",
-                "sha256:2d92418c7cb1c298fa6c7f0fb3519b520d0d7526ac6cb7ae2a4fc65a51a94b6e"
-            ],
-            "index": "pypi",
-            "version": "==2.0.2"
-        },
         "pydantic": {
             "hashes": [
                 "sha256:01aea3a42c13f2602b7ecbbea484a98169fb568ebd9e247593ea05f01b884b2e",
@@ -205,6 +197,14 @@
             ],
             "index": "pypi",
             "version": "==2.30.0"
+        },
+        "structlog": {
+            "hashes": [
+                "sha256:270d681dd7d163c11ba500bc914b2472d2b50a8ef00faa999ded5ff83a2f906b",
+                "sha256:79b9e68e48b54e373441e130fa447944e6f87a05b35de23138e475c05d0f7e0e"
+            ],
+            "index": "pypi",
+            "version": "==23.1.0"
         },
         "typing-extensions": {
             "hashes": [

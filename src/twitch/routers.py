@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 
 from brokers.producer import producer
 from cache import RedisCacheManager
+from core.enums import ObjectStatus
 from db import get_twitch_database
 from db.database_managers import TwitchDatabaseManager
 from dependecies import get_cache_manager
@@ -24,7 +25,7 @@ settings = TwitchSettings()
 
 
 @twitch_router.post("/streams")
-def parse_streams(
+async def parse_streams(
     parser: TwitchParserObject,
     db: TwitchDb,
     cache: CacheMngr,
@@ -38,25 +39,25 @@ def parse_streams(
     if game_id is not None:
         query_params["game_id"] = game_id
     key_for_cache = {"twitch_stream_params": query_params}
-    object_from_cache = cache.get_object_from_cache(key_for_cache)
+    object_from_cache = await cache.get_object_from_cache(key_for_cache)
     if object_from_cache:
-        if object_from_cache["status"] == "processed":
+        if object_from_cache["status"] == ObjectStatus.PROCESSED.name:
             return {"message": "object is already processed"}
     streams = list(parser.get_streams(query_params=query_params))
     for stream in streams:
-        db.save_one_stream(stream)
-    cache.save_to_cache(
+        await db.save_one_stream(stream)
+    await cache.save_to_cache(
         key_for_cache,
         60 * 5,
         TwitchResponseFromParser(
-            status="processed", twitch_streams_params=query_params, data=streams
+            status=ObjectStatus.PROCESSED.name, twitch_streams_params=query_params, data=streams
         ),
     )
     return {"message": "processed"}
 
 
 @twitch_router.get("/parse/streams", response_model=TwitchResponseFromParser)
-def get_parsed_categories(
+async def get_parsed_streams(
     cache: CacheMngr,
     first: int = 10,
     game_id: int | None = None,
@@ -71,13 +72,13 @@ def get_parsed_categories(
     if game_id is not None:
         query_params["game_id"] = game_id
     key_for_cache = {"twitch_stream_params": query_params}
-    object_from_cache = cache.get_object_from_cache(key_for_cache)
+    object_from_cache = await cache.get_object_from_cache(key_for_cache)
     if object_from_cache:
         return object_from_cache
-    cache.save_to_cache(
+    await cache.save_to_cache(
         key_for_cache,
         60 * 3,
-        TwitchResponseFromParser(status="pending", twitch_streams_params=query_params),
+        TwitchResponseFromParser(status=ObjectStatus.PENDING.name, twitch_streams_params=query_params),
     )
     producer.produce(
         settings.twitch_stream_topic,
@@ -85,11 +86,11 @@ def get_parsed_categories(
         value=json.dumps(key_for_cache),
     )
     return TwitchResponseFromParser(
-        status="created", twitch_streams_params=key_for_cache
+        status=ObjectStatus.CREATED.name, twitch_streams_params=key_for_cache
     )
 
 
 @twitch_router.get("/test")
-def test_twitch(db: TwitchDb):
-    db.get_test_message("hello")
+async def test_twitch(db: TwitchDb):
+    await db.get_test_message("hello")
     return {"message": "success"}

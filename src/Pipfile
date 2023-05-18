@@ -13,9 +13,10 @@ flake8 = "*"
 isort = "*"
 black = "*"
 mypy = "*"
-kafka-python = "*"
 redis = "*"
 confluent-kafka = "*"
+motor = "*"
+aioredis = "*"
 
 [dev-packages]
 
