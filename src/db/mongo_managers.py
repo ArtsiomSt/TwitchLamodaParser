@@ -36,7 +36,6 @@ class MongoLamodaManager(LamodaDatabaseManager):
             created_id = await self.product_collection.find_one_and_replace(
                 {"url": product.url}, dict_from_product
             )
-            print("Here", created_id)
             product.id = str(created_id["_id"])
             return str(created_id["_id"])
         created_id = await self.product_collection.insert_one(dict_from_product)
@@ -85,8 +84,6 @@ class MongoLamodaManager(LamodaDatabaseManager):
 
     async def get_test_message(self, message: str) -> Any:
         # method for my personal tests, would like to keep it for now
-        async for item in self.product_collection.find({}):
-            print(item)
         return {"message": message}
 
 
