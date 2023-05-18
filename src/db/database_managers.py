@@ -51,7 +51,9 @@ class LamodaDatabaseManager(DatabaseManager):
         """Implementation of getting product by unique identifiers"""
 
     @abstractmethod
-    async def get_categories_by_filter(self, query_filter: dict) -> list[LamodaCategory]:
+    async def get_categories_by_filter(
+        self, query_filter: dict
+    ) -> list[LamodaCategory]:
         """Implementation of getting products by custom filter"""
 
 

@@ -15,6 +15,7 @@ from lamoda.service import (
     parse_lamoda_category,
     parse_links_from_category,
     parse_object,
+    validate_url,
 )
 from schemas import LamodaResponseFromParser
 
@@ -29,6 +30,7 @@ settings = LamodaSettings()
 async def parse_product(url: str, db: LamodaDb, cache: CacheMngr):
     """View for parsing product by its url, processed product is saved to cache and db"""
 
+    validate_url(url, is_product=True, is_category=False)
     params = {}
     key_for_cache = {"url": url, "params": params}
     object_from_cache = await cache.get_object_from_cache(key_for_cache)
@@ -51,6 +53,7 @@ async def parse_product(url: str, db: LamodaDb, cache: CacheMngr):
 async def parse_category(url: str, db: LamodaDb, cache: CacheMngr):
     """View for parsing category, processed category is saved to cache and db"""
 
+    validate_url(url, is_product=False, is_category=True)
     params = {}
     key_for_cache = {"url": url, "params": params}
     object_from_cache = await cache.get_object_from_cache(key_for_cache)
@@ -67,7 +70,10 @@ async def parse_category(url: str, db: LamodaDb, cache: CacheMngr):
         key_for_cache,
         60 * 5,
         LamodaResponseFromParser(
-            url=url, status=ObjectStatus.PROCESSED.name, params=params, data=created_category
+            url=url,
+            status=ObjectStatus.PROCESSED.name,
+            params=params,
+            data=created_category,
         ),
     )
     return {"message": "processed"}
@@ -80,6 +86,7 @@ async def get_parsed_products(url: str, cache: CacheMngr):
     using kafka, products are parsed in other application
     """
 
+    validate_url(url, is_product=True, is_category=False)
     params = {}
     key_for_cache = {"url": url, "params": params}
     object_from_cache = await cache.get_object_from_cache(key_for_cache)
@@ -88,7 +95,9 @@ async def get_parsed_products(url: str, cache: CacheMngr):
     await cache.save_to_cache(
         key_for_cache,
         60 * 5,
-        LamodaResponseFromParser(url=url, status=ObjectStatus.PENDING.name, params=params),
+        LamodaResponseFromParser(
+            url=url, status=ObjectStatus.PENDING.name, params=params
+        ),
     )
     producer.produce(
         settings.lamoda_products_topic,
@@ -107,6 +116,7 @@ async def get_parsed_categories(url: str, cache: CacheMngr):
     using kafka, categories are parsed in other application
     """
 
+    validate_url(url, is_product=False, is_category=True)
     params = {}
     key_for_cache = {"url": url, "params": params}
     object_from_cache = await cache.get_object_from_cache(key_for_cache)
@@ -115,7 +125,9 @@ async def get_parsed_categories(url: str, cache: CacheMngr):
     await cache.save_to_cache(
         key_for_cache,
         60 * 3,
-        LamodaResponseFromParser(url=url, status=ObjectStatus.PENDING.name, params=params),
+        LamodaResponseFromParser(
+            url=url, status=ObjectStatus.PENDING.name, params=params
+        ),
     )
     producer.produce(
         settings.lamoda_category_topic,

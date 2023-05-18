@@ -2,8 +2,8 @@ import json
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel
 from aioredis import Redis
+from pydantic import BaseModel
 
 from config import Settings
 

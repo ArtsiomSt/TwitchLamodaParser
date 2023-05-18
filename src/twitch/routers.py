@@ -50,7 +50,9 @@ async def parse_streams(
         key_for_cache,
         60 * 5,
         TwitchResponseFromParser(
-            status=ObjectStatus.PROCESSED.name, twitch_streams_params=query_params, data=streams
+            status=ObjectStatus.PROCESSED.name,
+            twitch_streams_params=query_params,
+            data=streams,
         ),
     )
     return {"message": "processed"}
@@ -78,7 +80,9 @@ async def get_parsed_streams(
     await cache.save_to_cache(
         key_for_cache,
         60 * 3,
-        TwitchResponseFromParser(status=ObjectStatus.PENDING.name, twitch_streams_params=query_params),
+        TwitchResponseFromParser(
+            status=ObjectStatus.PENDING.name, twitch_streams_params=query_params
+        ),
     )
     producer.produce(
         settings.twitch_stream_topic,

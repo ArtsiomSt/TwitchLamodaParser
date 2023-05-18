@@ -1,10 +1,11 @@
 from typing import Any
 
 from bson import ObjectId
-from pymongo.collection import Collection
-from pymongo.database import Database
-from pymongo.mongo_client import MongoClient
-from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection, AsyncIOMotorClient
+from motor.motor_asyncio import (
+    AsyncIOMotorClient,
+    AsyncIOMotorCollection,
+    AsyncIOMotorDatabase,
+)
 
 from lamoda.schemas import LamodaCategory, LamodaProduct
 from twitch.schemas import TwitchStream, TwitchUser
@@ -73,7 +74,9 @@ class MongoLamodaManager(LamodaDatabaseManager):
         )
         return LamodaCategory(**category)
 
-    async def get_categories_by_filter(self, query_filter: dict) -> list[LamodaCategory]:
+    async def get_categories_by_filter(
+        self, query_filter: dict
+    ) -> list[LamodaCategory]:
         result_list = []
         async for category in self.category_collection.find(query_filter):
             category["id"] = category["_id"]

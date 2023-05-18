@@ -1,10 +1,10 @@
 import json
 
-from confluent_kafka import Consumer
-from config import BrokerSettings
-from logger import logger_structlog
 import requests
+from confluent_kafka import Consumer
+from logger import logger_structlog
 
+from config import BrokerSettings
 
 settings = BrokerSettings()
 
