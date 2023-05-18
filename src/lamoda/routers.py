@@ -34,19 +34,18 @@ async def parse_product(url: ProductUrl, db: LamodaDb, cache: CacheMngr):
     Should be called from kafka.
     """
 
-    url = url.url
     params = {}
-    key_for_cache = {"url": url, "params": params}
+    key_for_cache = {"url": url.url, "params": params}
     object_from_cache = await cache.get_object_from_cache(key_for_cache)
     if object_from_cache and object_from_cache["status"] == ObjectStatus.PROCESSED.name:
         return {"message": "object is already processed"}
-    product = parse_object(url)
+    product = parse_object(url.url)
     await db.save_one_product(product)
     await cache.save_to_cache(
         key_for_cache,
         60 * 5,
         LamodaResponseFromParser(
-            url=url, status=ObjectStatus.PROCESSED.name, params=params, data=product
+            url=url.url, status=ObjectStatus.PROCESSED.name, params=params, data=product
         ),
     )
     return {"message": "processed"}
@@ -60,13 +59,12 @@ async def parse_category(url: CategoryUrl, db: LamodaDb, cache: CacheMngr):
     Should be called from kafka.
     """
 
-    url = url.url
     params = {}
-    key_for_cache = {"url": url, "params": params}
+    key_for_cache = {"url": url.url, "params": params}
     object_from_cache = await cache.get_object_from_cache(key_for_cache)
     if object_from_cache and object_from_cache["status"] == ObjectStatus.PROCESSED.name:
         return {"message": "object is already processed"}
-    category = parse_lamoda_category(url)
+    category = parse_lamoda_category(url.url)
     category_id = await db.save_one_category(category)
     created_category = await db.get_one_category(ObjectId(category_id))
     for product in parse_links_from_category(created_category):
@@ -76,7 +74,7 @@ async def parse_category(url: CategoryUrl, db: LamodaDb, cache: CacheMngr):
         key_for_cache,
         60 * 5,
         LamodaResponseFromParser(
-            url=url,
+            url=url.url,
             status=ObjectStatus.PROCESSED.name,
             params=params,
             data=created_category,
@@ -93,9 +91,8 @@ async def get_parsed_products(url: ProductUrl, cache: CacheMngr):
     /parse/product of another similar application, that processes request
     """
 
-    url = url.url
     params = {}
-    key_for_cache = {"url": url, "params": params}
+    key_for_cache = {"url": url.url, "params": params}
     object_from_cache = await cache.get_object_from_cache(key_for_cache)
     if object_from_cache:
         return object_from_cache
@@ -103,7 +100,7 @@ async def get_parsed_products(url: ProductUrl, cache: CacheMngr):
         key_for_cache,
         60 * 5,
         LamodaResponseFromParser(
-            url=url, status=ObjectStatus.PENDING.name, params=params
+            url=url.url, status=ObjectStatus.PENDING.name, params=params
         ),
     )
     producer.produce(
@@ -112,7 +109,7 @@ async def get_parsed_products(url: ProductUrl, cache: CacheMngr):
         value=json.dumps(key_for_cache),
     )
     return LamodaResponseFromParser.parse_obj(
-        {"url": url, "params": params, "status": ObjectStatus.CREATED.name}
+        {"url": url.url, "params": params, "status": ObjectStatus.CREATED.name}
     )
 
 
@@ -124,9 +121,8 @@ async def get_parsed_categories(url: CategoryUrl, cache: CacheMngr):
     /parse/category of another similar application, that processes request.
     """
 
-    url = url.url
     params = {}
-    key_for_cache = {"url": url, "params": params}
+    key_for_cache = {"url": url.url, "params": params}
     object_from_cache = await cache.get_object_from_cache(key_for_cache)
     if object_from_cache:
         return object_from_cache
@@ -134,7 +130,7 @@ async def get_parsed_categories(url: CategoryUrl, cache: CacheMngr):
         key_for_cache,
         60 * 3,
         LamodaResponseFromParser(
-            url=url, status=ObjectStatus.PENDING.name, params=params
+            url=url.url, status=ObjectStatus.PENDING.name, params=params
         ),
     )
     producer.produce(
@@ -143,7 +139,7 @@ async def get_parsed_categories(url: CategoryUrl, cache: CacheMngr):
         value=json.dumps(key_for_cache),
     )
     return LamodaResponseFromParser.parse_obj(
-        {"url": url, "params": params, "status": ObjectStatus.CREATED.name}
+        {"url": url.url, "params": params, "status": ObjectStatus.CREATED.name}
     )
 
 

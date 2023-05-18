@@ -50,4 +50,9 @@ class ProductUrl(LamodaUrl):
 
 
 class CategoryUrl(LamodaUrl):
+    """
+    Class for validation url of category, soon mb there
+    will be some additional params for url
+    """
+
     is_category: bool = Field(True, const=True)
