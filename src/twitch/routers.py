@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -25,7 +26,7 @@ CacheMngr = Annotated[RedisCacheManager, Depends(get_cache_manager)]
 settings = TwitchSettings()
 
 
-@twitch_router.post("/parse/stream")
+@twitch_router.post("/stream/parse")
 async def parse_streams(
     parser: TwitchParserObject,
     db: TwitchDb,
@@ -48,7 +49,9 @@ async def parse_streams(
     object_from_cache = await cache.get_object_from_cache(key_for_cache)
     if object_from_cache and object_from_cache["status"] == ObjectStatus.PROCESSED.name:
         return {"message": "object is already processed"}
-    streams = list(parser.get_streams(query_params=query_params))
+    twitch_query_params = deepcopy(query_params)
+    twitch_query_params['first'] = twitch_query_params.pop("streams_amount")
+    streams = list(parser.get_streams(query_params=twitch_query_params))
     for stream in streams:
         await db.save_one_stream(stream)
     await cache.save_to_cache(
@@ -78,6 +81,7 @@ async def get_parsed_streams(params: TwitchStreamParams, cache: CacheMngr):
     if params.game_id is not None:
         query_params["game_id"] = params.game_id
     key_for_cache = {"twitch_stream_params": query_params}
+    print(key_for_cache)
     object_from_cache = await cache.get_object_from_cache(
         key_for_cache, ["data", "streams"], params.paginate_by, params.page_num
     )
@@ -96,7 +100,7 @@ async def get_parsed_streams(params: TwitchStreamParams, cache: CacheMngr):
         value=json.dumps(key_for_cache),
     )
     return TwitchResponseFromParser(
-        status=ObjectStatus.CREATED.name, twitch_streams_params=key_for_cache
+        status=ObjectStatus.CREATED.name, twitch_streams_params=query_params
     )
 
 

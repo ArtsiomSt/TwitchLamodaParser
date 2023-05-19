@@ -31,7 +31,7 @@ class TwitchStream(CustomModel):
 class TwitchStreamParams(BaseModel):
     paginate_by: Optional[int]
     page_num: Optional[int]
-    streams_amount: int = (10,)
+    streams_amount: int = 10
     game_id: int = Field(None, gt=0)
     language: str = "en"
 
