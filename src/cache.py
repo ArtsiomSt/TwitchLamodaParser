@@ -6,6 +6,7 @@ from aioredis import Redis
 from pydantic import BaseModel
 
 from config import Settings
+from exceptions import PaginationException
 
 settings = Settings()
 
@@ -30,13 +31,23 @@ class RedisCacheManager:
         value = json.dumps(value).encode("utf-8")
         return await self.redis.setex(json.dumps(key).encode("utf-8"), ttl, value)
 
-    async def get_object_from_cache(self, key: Any) -> Any:
+    async def get_object_from_cache(
+        self,
+        key: Any,
+        paginated_fields: list[str] | None = None,
+        paginate_by: int = None,
+        page_num: int = None,
+    ) -> Any:
+        if paginated_fields is None:
+            paginated_fields = []
         value = await self.redis.get(json.dumps(key).encode("utf-8"))
         if value:
             try:
-                return json.loads(value.decode())
+                response = json.loads(value.decode())
             except json.decoder.JSONDecodeError:
                 return value.decode()
+            get_paginated_dict(response, paginated_fields, paginate_by, page_num)
+            return response
         return None
 
 
@@ -62,3 +73,25 @@ def replace_basemodel_unserializable_fields(dict_from_object: dict):
             dict_from_object[dkey] = new_list
         elif isinstance(dvalue, dict):
             replace_basemodel_unserializable_fields(dvalue)
+
+
+def get_paginated_dict(
+    data: dict,
+    paginate_fields: list[str],
+    paginate_by: int = None,
+    page_num: int = None,
+) -> dict:
+    """Function that paginates given fields"""
+
+    if paginate_by is None or page_num is None:
+        return data
+    for key, value in data.items():
+        if key in paginate_fields and type(value) == list:
+            if len(value) < paginate_by:
+                raise PaginationException(
+                    detail=f"Maximum paginate_by value is {len(value)}"
+                )
+            data[key] = value[paginate_by * page_num: paginate_by * (page_num + 1)]
+        elif key in paginate_fields and type(value) == dict:
+            get_paginated_dict(value, paginate_fields, paginate_by, page_num)
+    return data

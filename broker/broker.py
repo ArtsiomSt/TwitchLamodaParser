@@ -45,6 +45,6 @@ while True:
             case "stream":
                 params = {}
                 params.update(message_data.get("twitch_stream_params", {}))
-                resp = requests.post(form_url(settings.parse_streams_url), params=params)
+                resp = requests.post(form_url(settings.parse_streams_url), json=params)
                 logger_structlog.info("Successfully processed request", topic=topic, **params)
         consumer.commit(message=msg)

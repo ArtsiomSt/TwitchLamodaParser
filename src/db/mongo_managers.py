@@ -84,6 +84,8 @@ class MongoLamodaManager(LamodaDatabaseManager):
 
     async def get_test_message(self, message: str) -> Any:
         # method for my personal tests, would like to keep it for now
+        r = self.product_collection.find({})
+        print(r)
         return {"message": message}
 
 

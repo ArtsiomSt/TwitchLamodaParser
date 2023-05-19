@@ -13,6 +13,7 @@ from schemas import TwitchResponseFromParser
 
 from .config import TwitchSettings
 from .dependencies import get_twitch_parser
+from .schemas import TwitchStreamParams
 from .service import TwitchParser
 
 twitch_router = APIRouter(prefix="/twitch")
@@ -29,9 +30,7 @@ async def parse_streams(
     parser: TwitchParserObject,
     db: TwitchDb,
     cache: CacheMngr,
-    streams_amount: int = 10,
-    game_id: int | None = None,
-    language: str = "en",
+    params: TwitchStreamParams,
 ):
     """
     This views stands for parsing streams, processed streams are saved to cache and db
@@ -39,9 +38,12 @@ async def parse_streams(
     Should be called from kafka.
     """
 
-    query_params = {"streams_amount": streams_amount, "language": language}
-    if game_id is not None:
-        query_params["game_id"] = game_id
+    query_params = {
+        "streams_amount": params.streams_amount,
+        "language": params.language,
+    }
+    if params.game_id is not None:
+        query_params["game_id"] = params.game_id
     key_for_cache = {"twitch_stream_params": query_params}
     object_from_cache = await cache.get_object_from_cache(key_for_cache)
     if object_from_cache and object_from_cache["status"] == ObjectStatus.PROCESSED.name:
@@ -62,23 +64,23 @@ async def parse_streams(
 
 
 @twitch_router.post("/stream", response_model=TwitchResponseFromParser)
-async def get_parsed_streams(
-    cache: CacheMngr,
-    streams_amount: int = 10,
-    game_id: int | None = None,
-    language: str = "en",
-):
+async def get_parsed_streams(params: TwitchStreamParams, cache: CacheMngr):
     """
     This view stands for sending requests for parsing streams
     using kafka, streams are parsed in other application. Kafka sends request
     for parsing to /parse/stream of another application, that processes request
     """
 
-    query_params = {"streams_amount": streams_amount, "language": language}
-    if game_id is not None:
-        query_params["game_id"] = game_id
+    query_params = {
+        "streams_amount": params.streams_amount,
+        "language": params.language,
+    }
+    if params.game_id is not None:
+        query_params["game_id"] = params.game_id
     key_for_cache = {"twitch_stream_params": query_params}
-    object_from_cache = await cache.get_object_from_cache(key_for_cache)
+    object_from_cache = await cache.get_object_from_cache(
+        key_for_cache, ["data", "streams"], params.paginate_by, params.page_num
+    )
     if object_from_cache:
         return object_from_cache
     await cache.save_to_cache(
