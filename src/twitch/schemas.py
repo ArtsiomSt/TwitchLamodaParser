@@ -1,9 +1,8 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field
 
-from exceptions import PaginationException
-from schemas import CustomModel
+from schemas import CustomModel, PaginateFields
 
 
 class TwitchUser(CustomModel):
@@ -28,9 +27,7 @@ class TwitchStream(CustomModel):
     tags: Optional[list[str]]
 
 
-class TwitchStreamParams(BaseModel):
-    paginate_by: Optional[int] = Field(gt=0)
-    page_num: Optional[int] = Field(gt=0)
+class TwitchStreamParams(PaginateFields):
     streams_amount: int = Field(10, gt=0)
     game_id: int = Field(None, gt=0)
     language: str = "en"

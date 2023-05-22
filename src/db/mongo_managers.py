@@ -1,5 +1,6 @@
 from typing import Any
 
+from fastapi import HTTPException
 from bson import ObjectId
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
@@ -47,9 +48,18 @@ class MongoLamodaManager(LamodaDatabaseManager):
         product["id"] = product["_id"]
         return LamodaProduct(**product)
 
-    async def get_products_by_filter(self, query_filter: dict) -> list[LamodaProduct]:
+    async def get_products_by_filter(
+        self,
+        query_filter: dict,
+        paginate_by: int | None = None,
+        page_num: int | None = None,
+    ) -> list[LamodaProduct]:
         result_list = []
-        async for product in self.product_collection.find(query_filter):
+        paginator = {}
+        if not (paginate_by is None or page_num is None):
+            paginator["skip"] = paginate_by * page_num
+            paginator["limit"] = paginate_by
+        async for product in self.product_collection.find(query_filter, **paginator):
             product["id"] = product["_id"]
             result_list.append(LamodaProduct(**product))
         return result_list
@@ -74,18 +84,33 @@ class MongoLamodaManager(LamodaDatabaseManager):
         return LamodaCategory(**category)
 
     async def get_categories_by_filter(
-        self, query_filter: dict
+        self,
+        query_filter: dict,
+        paginate_by: int | None = None,
+        page_num: int | None = None,
+        with_products: bool = False,
     ) -> list[LamodaCategory]:
         result_list = []
-        async for category in self.category_collection.find(query_filter):
+        paginator = {}
+        if not (paginate_by is None or page_num is None):
+            paginator["skip"] = paginate_by * page_num
+            paginator["limit"] = paginate_by
+        async for category in self.category_collection.find(query_filter, **paginator):
             category["id"] = category["_id"]
+            if with_products and paginate_by and paginate_by < 3:
+                category["products"] = await self.get_products_by_filter(
+                    {"category_id": str(category["id"])}
+                )
+            elif with_products:
+                raise HTTPException(
+                    status_code=400,
+                    detail="To get categories with parsed products you have to paginate by 2 or less",
+                )
             result_list.append(LamodaCategory(**category))
         return result_list
 
     async def get_test_message(self, message: str) -> Any:
         # method for my personal tests, would like to keep it for now
-        r = self.product_collection.find({})
-        print(r)
         return {"message": message}
 
 

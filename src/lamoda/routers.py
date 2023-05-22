@@ -11,13 +11,19 @@ from db import get_lamoda_database
 from db.database_managers import LamodaDatabaseManager
 from dependecies import get_cache_manager
 from lamoda.config import LamodaSettings
-from lamoda.schemas import CategoryParams, ProductParams
+from lamoda.schemas import (
+    CategoryParams,
+    ProductParams,
+    ProductDbParams,
+    CategoryDbParams,
+)
 from lamoda.service import (
     parse_lamoda_category,
     parse_links_from_category,
     parse_object,
 )
-from schemas import LamodaResponseFromParser
+from schemas import LamodaResponseFromParser, ResponseFromDb
+from utils import get_available_params
 
 lamoda_router = APIRouter(prefix="/lamoda")
 
@@ -143,6 +149,45 @@ async def get_parsed_categories(url: CategoryParams, cache: CacheMngr):
     return LamodaResponseFromParser.parse_obj(
         {"url": url.url, "params": params, "status": ObjectStatus.CREATED.name}
     )
+
+
+@lamoda_router.get("/product")
+async def get_products(
+    db: LamodaDb, params: ProductDbParams = Depends()
+) -> ResponseFromDb:
+    available_filters = ["product_type", "url"]
+    filter_params = get_available_params(params.dict(), available_filters)
+    products = await db.get_products_by_filter(
+        filter_params, paginate_by=params.paginate_by, page_num=params.page_num
+    )
+    response_dict = {
+        "status": ObjectStatus.PROCESSED.name,
+        "data": products,
+        "paginate_by": params.paginate_by,
+        "page_num": params.page_num,
+    }
+    return ResponseFromDb(**response_dict)
+
+
+@lamoda_router.get("/category")
+async def get_categories(
+    db: LamodaDb, params: CategoryDbParams = Depends()
+) -> ResponseFromDb:
+    available_filters = ["url"]
+    filter_params = get_available_params(params.dict(), available_filters)
+    products = await db.get_categories_by_filter(
+        filter_params,
+        paginate_by=params.paginate_by,
+        page_num=params.page_num,
+        with_products=params.with_products,
+    )
+    response_dict = {
+        "status": ObjectStatus.PROCESSED.name,
+        "data": products,
+        "paginate_by": params.paginate_by,
+        "page_num": params.page_num,
+    }
+    return ResponseFromDb(**response_dict)
 
 
 @lamoda_router.get("/test")
