@@ -11,12 +11,12 @@ from db import get_lamoda_database
 from db.database_managers import LamodaDatabaseManager
 from dependecies import get_cache_manager
 from lamoda.config import LamodaSettings
+from lamoda.schemas import CategoryParams, ProductParams
 from lamoda.service import (
     parse_lamoda_category,
     parse_links_from_category,
     parse_object,
 )
-from lamoda.schemas import CategoryUrl, ProductUrl
 from schemas import LamodaResponseFromParser
 
 lamoda_router = APIRouter(prefix="/lamoda")
@@ -26,8 +26,8 @@ CacheMngr = Annotated[RedisCacheManager, Depends(get_cache_manager)]
 settings = LamodaSettings()
 
 
-@lamoda_router.post("/parse/product")
-async def parse_product(url: ProductUrl, db: LamodaDb, cache: CacheMngr):
+@lamoda_router.post("/product/parse")
+async def parse_product(url: ProductParams, db: LamodaDb, cache: CacheMngr):
     """
     View for parsing product by its url, processed product is saved to cache and db
     It should not be called directly, because of it has to calculate a lot of info,
@@ -51,8 +51,8 @@ async def parse_product(url: ProductUrl, db: LamodaDb, cache: CacheMngr):
     return {"message": "processed"}
 
 
-@lamoda_router.post("/parse/category")
-async def parse_category(url: CategoryUrl, db: LamodaDb, cache: CacheMngr):
+@lamoda_router.post("/category/parse")
+async def parse_category(url: CategoryParams, db: LamodaDb, cache: CacheMngr):
     """
     View for parsing category, processed category is saved to cache and db
     It should not be called directly, because of it has to calculate a lot of info,
@@ -84,7 +84,7 @@ async def parse_category(url: CategoryUrl, db: LamodaDb, cache: CacheMngr):
 
 
 @lamoda_router.post("/product", response_model=LamodaResponseFromParser)
-async def get_parsed_products(url: ProductUrl, cache: CacheMngr):
+async def get_parsed_products(url: ProductParams, cache: CacheMngr):
     """
     This view stands for sending requests for parsing products
     using kafka, products are parsed in other application. Kafka then sends request to
@@ -114,7 +114,7 @@ async def get_parsed_products(url: ProductUrl, cache: CacheMngr):
 
 
 @lamoda_router.post("/category", response_model=LamodaResponseFromParser)
-async def get_parsed_categories(url: CategoryUrl, cache: CacheMngr):
+async def get_parsed_categories(url: CategoryParams, cache: CacheMngr):
     """
     This view stands for sending requests for parsing categories
     using kafka, products are parsed in other application. Kafka then sends request to
@@ -123,7 +123,9 @@ async def get_parsed_categories(url: CategoryUrl, cache: CacheMngr):
 
     params = {}
     key_for_cache = {"url": url.url, "params": params}
-    object_from_cache = await cache.get_object_from_cache(key_for_cache)
+    object_from_cache = await cache.get_object_from_cache(
+        key_for_cache, ["data", "products"], url.paginate_by, url.page_num
+    )
     if object_from_cache:
         return object_from_cache
     await cache.save_to_cache(
