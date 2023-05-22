@@ -25,7 +25,7 @@ class TwitchStream(CustomModel):
     game_name: str
     stream_title: str
     viewer_count: int
-    tags: list[str]
+    tags: Optional[list[str]]
 
 
 class TwitchStreamParams(BaseModel):

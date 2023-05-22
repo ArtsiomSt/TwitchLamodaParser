@@ -81,7 +81,6 @@ async def get_parsed_streams(params: TwitchStreamParams, cache: CacheMngr):
     if params.game_id is not None:
         query_params["game_id"] = params.game_id
     key_for_cache = {"twitch_stream_params": query_params}
-    print(key_for_cache)
     object_from_cache = await cache.get_object_from_cache(
         key_for_cache, ["data", "streams"], params.paginate_by, params.page_num
     )
@@ -106,5 +105,4 @@ async def get_parsed_streams(params: TwitchStreamParams, cache: CacheMngr):
 
 @twitch_router.get("/test")
 async def test_twitch(db: TwitchDb):
-    await db.get_test_message("hello")
     return {"message": "success"}
