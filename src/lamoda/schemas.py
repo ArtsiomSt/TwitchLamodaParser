@@ -32,14 +32,8 @@ class LamodaCategory(CustomModel):
 
 class LamodaParams(BaseModel):
     url: str
-    paginate_by: Optional[int]
-    page_num: Optional[int]
-
-    @validator("paginate_by", "page_num")
-    def validate_positive(cls, value):
-        if value < 0:
-            raise PaginationException(detail=f"{value} should be positive")
-        return value
+    paginate_by: Optional[int] = Field(gt=0)
+    page_num: Optional[int] = Field(gt=0)
 
     @root_validator
     def validate_url_pagination(cls, values):

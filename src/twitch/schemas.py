@@ -29,14 +29,8 @@ class TwitchStream(CustomModel):
 
 
 class TwitchStreamParams(BaseModel):
-    paginate_by: Optional[int]
-    page_num: Optional[int]
-    streams_amount: int = 10
+    paginate_by: Optional[int] = Field(gt=0)
+    page_num: Optional[int] = Field(gt=0)
+    streams_amount: int = Field(10, gt=0)
     game_id: int = Field(None, gt=0)
     language: str = "en"
-
-    @validator("paginate_by", "page_num", "streams_amount")
-    def validate_positive(cls, value):
-        if value is not None and value < 0:
-            raise PaginationException(detail=f"{value} should be positive")
-        return value
