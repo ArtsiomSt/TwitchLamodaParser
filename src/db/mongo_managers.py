@@ -136,6 +136,22 @@ class MongoTwitchManager(TwitchDatabaseManager):
         user.id = str(created_id.inserted_id)
         return str(created_id.inserted_id)
 
+    async def get_users_by_filter(
+        self,
+        query_filter: dict,
+        paginate_by: int | None = None,
+        page_num: int | None = None,
+    ) -> list[TwitchUser]:
+        result_list = []
+        paginator = {}
+        if not (paginate_by is None or page_num is None):
+            paginator["skip"] = paginate_by * page_num
+            paginator["limit"] = paginate_by
+        async for user in self.users_collection.find(query_filter, **paginator):
+            user["id"] = user["_id"]
+            result_list.append(TwitchUser(**user))
+        return result_list
+
     async def save_one_stream(self, stream: TwitchStream) -> str:
         user = stream.user
         await self.save_one_user(user)

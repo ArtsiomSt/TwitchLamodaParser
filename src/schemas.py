@@ -31,22 +31,9 @@ class CustomModel(BaseModel):
     created_at: datetime = datetime.utcnow()
 
 
-class LamodaResponseFromParser(BaseModel):
-    url: str
-    status: str
-    params: dict
-    data: Optional[Any]
-
-
-class TwitchResponseFromParser(BaseModel):
-    twitch_streams_params: dict
-    status: str
-    data: Optional[Any]
-
-
 class PaginateFields(BaseModel):
-    paginate_by: Optional[int] = Field(gt=-1)
-    page_num: Optional[int] = Field(gt=-1)
+    paginate_by: Optional[int] = Field(10, gt=-1, le=20)
+    page_num: Optional[int] = Field(0, gt=-1)
 
     @root_validator
     def validate_pagination(cls, values):

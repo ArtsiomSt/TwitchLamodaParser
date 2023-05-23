@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 from pydantic import Field, root_validator
 
@@ -57,6 +57,13 @@ class CategoryParams(LamodaParams):
     """
 
     is_category: bool = Field(True, const=True)
+
+
+class LamodaResponseFromParser(PaginateFields):
+    url: str
+    status: str
+    params: dict
+    data: Optional[Any]
 
 
 class ProductDbParams(PaginateFields):

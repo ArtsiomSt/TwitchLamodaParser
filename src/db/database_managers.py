@@ -74,3 +74,12 @@ class TwitchDatabaseManager(DatabaseManager):
     @abstractmethod
     async def save_one_stream(self, stream: TwitchStream) -> str:
         """Implementing saving stream"""
+
+    @abstractmethod
+    async def get_users_by_filter(
+        self,
+        query_filter: dict,
+        paginate_by: int | None = None,
+        page_num: int | None = None,
+    ) -> list[TwitchUser]:
+        """Implementing of getting users from parsed streams"""

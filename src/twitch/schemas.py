@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 from pydantic import Field
 
@@ -27,7 +27,17 @@ class TwitchStream(CustomModel):
     tags: Optional[list[str]]
 
 
+class TwitchResponseFromParser(PaginateFields):
+    twitch_streams_params: dict
+    status: str
+    data: Optional[Any]
+
+
 class TwitchStreamParams(PaginateFields):
     streams_amount: int = Field(10, gt=0)
     game_id: int = Field(None, gt=0)
     language: str = "en"
+
+
+class TwitchUserParams(PaginateFields):
+    pass

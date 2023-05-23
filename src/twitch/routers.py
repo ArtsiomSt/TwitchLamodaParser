@@ -10,11 +10,11 @@ from core.enums import ObjectStatus
 from db import get_twitch_database
 from db.database_managers import TwitchDatabaseManager
 from dependecies import get_cache_manager
-from schemas import TwitchResponseFromParser
+from schemas import ResponseFromDb
 
 from .config import TwitchSettings
 from .dependencies import get_twitch_parser
-from .schemas import TwitchStreamParams
+from .schemas import TwitchStreamParams, TwitchUserParams, TwitchResponseFromParser
 from .service import TwitchParser
 
 twitch_router = APIRouter(prefix="/twitch")
@@ -78,6 +78,7 @@ async def get_parsed_streams(params: TwitchStreamParams, cache: CacheMngr):
         "streams_amount": params.streams_amount,
         "language": params.language,
     }
+    pagination = {"paginate_by": params.paginate_by, "page_num": params.page_num}
     if params.game_id is not None:
         query_params["game_id"] = params.game_id
     key_for_cache = {"twitch_stream_params": query_params}
@@ -85,6 +86,7 @@ async def get_parsed_streams(params: TwitchStreamParams, cache: CacheMngr):
         key_for_cache, ["data", "streams"], params.paginate_by, params.page_num
     )
     if object_from_cache:
+        object_from_cache.update(pagination)
         return object_from_cache
     await cache.save_to_cache(
         key_for_cache,
@@ -99,7 +101,22 @@ async def get_parsed_streams(params: TwitchStreamParams, cache: CacheMngr):
         value=json.dumps(key_for_cache),
     )
     return TwitchResponseFromParser(
-        status=ObjectStatus.CREATED.name, twitch_streams_params=query_params
+        status=ObjectStatus.CREATED.name, twitch_streams_params=query_params, **pagination
+    )
+
+
+@twitch_router.get('/user', response_model=ResponseFromDb)
+async def get_parsed_users(db: TwitchDb, params: TwitchUserParams = Depends()):
+    users = await db.get_users_by_filter(
+        {},
+        paginate_by=params.paginate_by,
+        page_num=params.page_num
+    )
+    return ResponseFromDb(
+        status=ObjectStatus.PROCESSED.name,
+        data=users,
+        paginate_by=params.paginate_by,
+        page_num=params.page_num
     )
 
 
