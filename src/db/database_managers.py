@@ -39,7 +39,12 @@ class LamodaDatabaseManager(DatabaseManager):
         """Implementation of getting product by unique identifiers"""
 
     @abstractmethod
-    async def get_products_by_filter(self, query_filter: dict) -> list[LamodaProduct]:
+    async def get_products_by_filter(
+        self,
+        query_filter: dict,
+        paginate_by: int | None = None,
+        page_num: int | None = None,
+    ) -> list[LamodaProduct]:
         """Implementation of getting products by custom filter"""
 
     @abstractmethod
@@ -52,7 +57,11 @@ class LamodaDatabaseManager(DatabaseManager):
 
     @abstractmethod
     async def get_categories_by_filter(
-        self, query_filter: dict
+        self,
+        query_filter: dict,
+        paginate_by: int | None = None,
+        page_num: int | None = None,
+        with_products: bool = False,
     ) -> list[LamodaCategory]:
         """Implementation of getting products by custom filter"""
 
@@ -65,3 +74,12 @@ class TwitchDatabaseManager(DatabaseManager):
     @abstractmethod
     async def save_one_stream(self, stream: TwitchStream) -> str:
         """Implementing saving stream"""
+
+    @abstractmethod
+    async def get_users_by_filter(
+        self,
+        query_filter: dict,
+        paginate_by: int | None = None,
+        page_num: int | None = None,
+    ) -> list[TwitchUser]:
+        """Implementing of getting users from parsed streams"""

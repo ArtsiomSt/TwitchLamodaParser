@@ -11,13 +11,20 @@ from db import get_lamoda_database
 from db.database_managers import LamodaDatabaseManager
 from dependecies import get_cache_manager
 from lamoda.config import LamodaSettings
-from lamoda.schemas import CategoryParams, ProductParams
+from lamoda.schemas import (
+    CategoryParams,
+    ProductParams,
+    ProductDbParams,
+    CategoryDbParams,
+    LamodaResponseFromParser,
+)
 from lamoda.service import (
     parse_lamoda_category,
     parse_links_from_category,
     parse_object,
 )
-from schemas import LamodaResponseFromParser
+from schemas import ResponseFromDb
+from utils import get_available_params
 
 lamoda_router = APIRouter(prefix="/lamoda")
 
@@ -95,6 +102,7 @@ async def get_parsed_products(url: ProductParams, cache: CacheMngr):
     key_for_cache = {"url": url.url, "params": params}
     object_from_cache = await cache.get_object_from_cache(key_for_cache)
     if object_from_cache:
+        object_from_cache.update({"paginate_by": 1, "page_num": 0})
         return object_from_cache
     await cache.save_to_cache(
         key_for_cache,
@@ -109,7 +117,13 @@ async def get_parsed_products(url: ProductParams, cache: CacheMngr):
         value=json.dumps(key_for_cache),
     )
     return LamodaResponseFromParser.parse_obj(
-        {"url": url.url, "params": params, "status": ObjectStatus.CREATED.name}
+        {
+            "url": url.url,
+            "params": params,
+            "status": ObjectStatus.CREATED.name,
+            "paginate_by": 1,
+            "page_num": 0,
+        }
     )
 
 
@@ -123,10 +137,12 @@ async def get_parsed_categories(url: CategoryParams, cache: CacheMngr):
 
     params = {}
     key_for_cache = {"url": url.url, "params": params}
+    pagination = {"paginate_by": url.paginate_by, "page_num": url.page_num}
     object_from_cache = await cache.get_object_from_cache(
         key_for_cache, ["data", "products"], url.paginate_by, url.page_num
     )
     if object_from_cache:
+        object_from_cache.update(pagination)
         return object_from_cache
     await cache.save_to_cache(
         key_for_cache,
@@ -140,9 +156,52 @@ async def get_parsed_categories(url: CategoryParams, cache: CacheMngr):
         key="parse_category",
         value=json.dumps(key_for_cache),
     )
-    return LamodaResponseFromParser.parse_obj(
-        {"url": url.url, "params": params, "status": ObjectStatus.CREATED.name}
+    return LamodaResponseFromParser(
+        url=url.url, params=params, status=ObjectStatus.CREATED.name, **pagination
     )
+
+
+@lamoda_router.get("/product")
+async def get_products(
+    db: LamodaDb, params: ProductDbParams = Depends()
+) -> ResponseFromDb:
+    """View that stands for getting products from database"""
+
+    available_filters = ["product_type", "url"]
+    filter_params = get_available_params(params.dict(), available_filters)
+    products = await db.get_products_by_filter(
+        filter_params, paginate_by=params.paginate_by, page_num=params.page_num
+    )
+    response_dict = {
+        "status": ObjectStatus.PROCESSED.name,
+        "data": products,
+        "paginate_by": params.paginate_by,
+        "page_num": params.page_num,
+    }
+    return ResponseFromDb(**response_dict)
+
+
+@lamoda_router.get("/category")
+async def get_categories(
+    db: LamodaDb, params: CategoryDbParams = Depends()
+) -> ResponseFromDb:
+    """View that stands for getting some categories from database"""
+
+    available_filters = ["url"]
+    filter_params = get_available_params(params.dict(), available_filters)
+    products = await db.get_categories_by_filter(
+        filter_params,
+        paginate_by=params.paginate_by,
+        page_num=params.page_num,
+        with_products=params.with_products,
+    )
+    response_dict = {
+        "status": ObjectStatus.PROCESSED.name,
+        "data": products,
+        "paginate_by": params.paginate_by,
+        "page_num": params.page_num,
+    }
+    return ResponseFromDb(**response_dict)
 
 
 @lamoda_router.get("/test")
