@@ -107,6 +107,8 @@ async def get_parsed_streams(params: TwitchStreamParams, cache: CacheMngr):
 
 @twitch_router.get('/user', response_model=ResponseFromDb)
 async def get_parsed_users(db: TwitchDb, params: TwitchUserParams = Depends()):
+    """View that stands for getting users from parsed streams from database"""
+
     users = await db.get_users_by_filter(
         {},
         paginate_by=params.paginate_by,

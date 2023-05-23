@@ -165,6 +165,8 @@ async def get_parsed_categories(url: CategoryParams, cache: CacheMngr):
 async def get_products(
     db: LamodaDb, params: ProductDbParams = Depends()
 ) -> ResponseFromDb:
+    """View that stands for getting products from database"""
+
     available_filters = ["product_type", "url"]
     filter_params = get_available_params(params.dict(), available_filters)
     products = await db.get_products_by_filter(
@@ -183,6 +185,8 @@ async def get_products(
 async def get_categories(
     db: LamodaDb, params: CategoryDbParams = Depends()
 ) -> ResponseFromDb:
+    """View that stands for getting some categories from database"""
+
     available_filters = ["url"]
     filter_params = get_available_params(params.dict(), available_filters)
     products = await db.get_categories_by_filter(
